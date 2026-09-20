@@ -258,6 +258,88 @@
         .day-chip input:active + span { transform: scale(0.94); }
         .day-chip input:focus-visible + span { outline: 2px solid var(--primary-dark); outline-offset: 2px; }
 
+        /* ===== FEEDBACK — MODERN DESIGN (shared look across login page, Admin, Student) ===== */
+        .fb-icon-badge {
+            width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+            box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+        }
+        .fb-role-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+        .fb-role-card {
+            display: flex; align-items: center; gap: 12px; text-align: left;
+            background: #f8fafc; border: 1.5px solid var(--border); border-radius: 16px;
+            padding: 14px 16px; cursor: pointer; transition: all 0.15s ease;
+            width: 100%; margin: 0; font-family: inherit; color: var(--dark); box-shadow: none;
+        }
+        .fb-role-card:hover, .fb-role-card:active { background: #eef2ff; border-color: #a5b4fc; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.15); }
+        .fb-role-card .ic { font-size: 1.6rem; flex-shrink: 0; }
+        .fb-role-card .txt { flex: 1; }
+        .fb-role-card .txt .t { font-weight: 800; font-size: 0.88rem; color: var(--dark); }
+        .fb-role-card .txt .s { font-size: 0.7rem; color: var(--grey); margin-top: 1px; }
+        .fb-star-widget { display: flex; gap: 6px; font-size: 1.9rem; cursor: pointer; user-select: none; justify-content: center; padding: 6px 0; }
+        .fb-star-widget span { transition: transform 0.12s ease, color 0.12s ease; display: inline-block; }
+        .fb-star-widget span:hover { transform: scale(1.18); }
+        .fb-tabbar { display: flex; gap: 6px; margin: 10px 0 16px; background: #f1f5f9; border-radius: 12px; padding: 4px; }
+        .fb-tabbar button {
+            flex: 1; background: transparent; border: none; color: var(--grey); font-weight: 800;
+            padding: 9px 4px; width: auto; margin: 0; box-shadow: none; font-size: 0.76rem;
+            border-radius: 9px; transition: all 0.15s ease;
+        }
+        .fb-tabbar button.active { background: #fff; color: var(--primary-dark); box-shadow: 0 2px 6px rgba(15,23,42,0.08); }
+        .fb-card {
+            background: #fff; border: 1px solid var(--border); border-radius: 16px;
+            padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+            border-left: 4px solid #a5b4fc; position: relative;
+        }
+        .fb-card.role-student { border-left-color: #6366f1; }
+        .fb-card.role-admin { border-left-color: #f59e0b; }
+        .fb-card.role-outsider { border-left-color: #64748b; }
+        .fb-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .fb-avatar {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; color: #fff;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        }
+        .fb-card-top .meta { flex: 1; min-width: 0; }
+        .fb-card-top .meta .nm { font-weight: 800; font-size: 0.85rem; color: var(--dark); }
+        .fb-card-top .meta .sub { font-size: 0.68rem; color: var(--grey); margin-top: 1px; }
+        .fb-card-top .dt { font-size: 0.66rem; color: var(--grey); white-space: nowrap; }
+        .fb-stars-line { color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px; letter-spacing: 1px; }
+        .fb-msg { font-size: 0.82rem; color: var(--dark); line-height: 1.55; white-space: pre-wrap; }
+        .fb-reply-bubble {
+            background: linear-gradient(135deg, #eef2ff, #f5f3ff); border-radius: 12px;
+            padding: 10px 12px; margin-top: 10px; font-size: 0.78rem; color: #4338ca; line-height: 1.5;
+        }
+        .fb-reply-pending { font-size: 0.72rem; color: var(--grey); margin-top: 8px; font-style: italic; }
+
+        /* ===== Feedback UI (public login-page form, Admin/Student modal, and shared bits) ===== */
+        .fb-role-grid { display: flex; gap: 10px; margin-top: 4px; }
+        .fb-role-card {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 18px 8px; border-radius: 16px; border: 1.5px solid var(--border);
+            background: #f8fafc; cursor: pointer; transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .fb-role-card:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.15); }
+        .fb-role-card:active { transform: translateY(0) scale(0.97); }
+        .fb-role-card .ic { font-size: 1.8rem; }
+        .fb-role-card .lb { font-size: 0.76rem; font-weight: 800; color: var(--dark); }
+        .fb-star-widget { display: flex; gap: 6px; font-size: 1.9rem; line-height: 1; cursor: pointer; user-select: none; }
+        .fb-star-widget span { transition: transform 0.1s ease, color 0.1s ease; display: inline-block; }
+        .fb-star-widget span:hover { transform: scale(1.15); }
+        .fb-tabs { display: flex; gap: 4px; margin: 12px 0 18px; background: #f1f5f9; border-radius: 12px; padding: 4px; }
+        .fb-tab-btn {
+            flex: 1; background: transparent !important; border: none !important; box-shadow: none !important;
+            color: var(--grey) !important; font-weight: 800; padding: 8px 6px !important; width: auto !important;
+            margin: 0 !important; font-size: 0.76rem; border-radius: 9px !important; transition: background 0.15s ease, color 0.15s ease;
+        }
+        .fb-tab-btn.active { background: #fff !important; color: var(--primary) !important; box-shadow: 0 2px 6px rgba(15,23,42,0.10) !important; }
+        .fb-history-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+        .fb-history-card .stars { color: #f59e0b; font-size: 0.95rem; letter-spacing: 1px; }
+        .fb-reply-box { background: linear-gradient(135deg, #eef2ff, #f5f3ff); border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: 0.78rem; color: var(--primary-dark); border: 1px solid #e0e7ff; }
+        .fb-awaiting { font-size: 0.72rem; color: var(--grey); margin-top: 6px; font-style: italic; }
+
         button {
             width: 100%; padding: 13px;
             background: var(--primary); color: white; border: none;
@@ -2875,6 +2957,89 @@
     </div>
 </div>
 
+<!-- PUBLIC FEEDBACK MODAL (login page — for anyone, logged in or not) -->
+<div id="public-feedback-modal" class="modal" style="display:none; z-index:100000;">
+        <div class="modal-content" style="max-width:440px; text-align:left;">
+            <div id="pf-step1">
+                <div class="fb-icon-badge">💬</div>
+                <h3 style="margin:0 0 6px; font-family:'Sora',sans-serif; font-size:1.05rem; text-align:center;">Feedback</h3>
+                <p style="font-size:0.78rem; color:var(--grey); margin:0 0 16px; line-height:1.5; text-align:center;">Do you use this library's app or website as a:</p>
+                <div class="fb-role-grid">
+                    <button type="button" class="fb-role-card" onclick="pfChooseRole('Student')"><span class="ic">🎓</span><span class="txt"><span class="t">Student</span><span class="s">I study at this library</span></span></button>
+                    <button type="button" class="fb-role-card" onclick="pfChooseRole('Admin')"><span class="ic">🗝️</span><span class="txt"><span class="t">Admin</span><span class="s">I manage this library</span></span></button>
+                    <button type="button" class="fb-role-card" onclick="pfChooseRole('Outsider')"><span class="ic">🌐</span><span class="txt"><span class="t">Just Visiting</span><span class="s">I'm neither, just checking it out</span></span></button>
+                </div>
+                <button onclick="closePublicFeedback()" style="background:#94a3b8; margin-top:16px;">✕ Cancel</button>
+            </div>
+            <div id="pf-step2" style="display:none;">
+                <div class="fb-icon-badge">💬</div>
+                <h3 style="margin:0 0 6px; font-family:'Sora',sans-serif; font-size:1.05rem; text-align:center;">Feedback</h3>
+                <p id="pf-step2-desc" style="font-size:0.78rem; color:var(--grey); margin:0 0 16px; line-height:1.5; text-align:center;"></p>
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="pf-name" placeholder="Enter your full name" oninput="hideError('err-pf-name')">
+                    <div class="error-msg" id="err-pf-name">Please enter your name</div>
+                </div>
+                <div class="input-group" id="pf-identifier-group">
+                    <label id="pf-identifier-label">ID</label>
+                    <input type="text" id="pf-identifier" placeholder="">
+                    <div class="error-msg" id="err-pf-identifier">This field is required</div>
+                </div>
+                <div class="input-group">
+                    <label>Your Rating</label>
+                    <div id="pf-star-widget" class="fb-star-widget"></div>
+                    <input type="hidden" id="pf-rating" value="0">
+                    <div class="error-msg" id="err-pf-rating">Please give a star rating</div>
+                </div>
+                <div class="input-group">
+                    <label>Your Feedback</label>
+                    <textarea id="pf-message" rows="5" placeholder="Tell us what's working, what isn't, or what you'd like to see" oninput="hideError('err-pf-message')"></textarea>
+                    <div class="error-msg" id="err-pf-message">Please write your feedback before submitting</div>
+                </div>
+                <button onclick="submitPublicFeedback()" style="background:#10b981;">🚀 Submit Feedback</button>
+                <button onclick="pfBackToStep1()" style="background:#94a3b8; margin-top:8px;">← Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP / WEBSITE FEEDBACK MODAL (Admin + Student) -->
+    <div id="app-feedback-modal" class="modal" style="display:none; z-index:100000;">
+        <div class="modal-content" style="max-width:440px; text-align:left;">
+            <div class="fb-icon-badge">💬</div>
+            <h3 style="margin:0 0 4px; font-family:'Sora',sans-serif; font-size:1.05rem; text-align:center;">Feedback</h3>
+            <div class="fb-tabbar">
+                <button type="button" id="af-tab-btn-give" class="active" onclick="afSwitchTab('give')">Give Feedback</button>
+                <button type="button" id="af-tab-btn-history" onclick="afSwitchTab('history')">My History</button>
+            </div>
+            <div id="af-give-panel">
+                <p style="font-size:0.78rem; color:var(--grey); margin:0 0 14px; line-height:1.5;">Found something confusing, buggy, or have an idea to make this app or website better? Tell us — your feedback goes straight to our team and helps us improve.</p>
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="af-name" placeholder="Enter your full name" oninput="hideError('err-af-name')">
+                    <div class="error-msg" id="err-af-name">Please enter your name</div>
+                </div>
+                <div class="input-group">
+                    <label>Your Rating</label>
+                    <div id="af-star-widget" class="fb-star-widget"></div>
+                    <input type="hidden" id="af-rating" value="0">
+                    <div class="error-msg" id="err-af-rating">Please give a star rating</div>
+                </div>
+                <div class="input-group">
+                    <label>Your Feedback</label>
+                    <textarea id="af-message" rows="5" placeholder="What's working well? What isn't? What would you like to see added or fixed?" oninput="hideError('err-af-message')"></textarea>
+                    <div class="error-msg" id="err-af-message">Please write your feedback before submitting</div>
+                </div>
+                <button onclick="submitAppFeedback()" style="background:#10b981;">🚀 Submit Feedback</button>
+                <button onclick="closeAppFeedbackModal()" style="background:#94a3b8; margin-top:8px;">✕ Cancel</button>
+            </div>
+            <div id="af-history-panel" style="display:none;">
+                <div id="af-history-list" style="max-height:50vh; overflow-y:auto;"></div>
+                <button onclick="closeAppFeedbackModal()" style="background:#94a3b8; margin-top:8px;">✕ Close</button>
+            </div>
+        </div>
+    </div>
+
+
 <!-- ===== ADMIN HELP & SUPPORT CENTER (pre-login, Admin -> Super Admin/Developer) ===== -->
 <div id="admin-help-center-overlay">
     <div class="help-center-card">
@@ -3046,6 +3211,9 @@
                 <div class="login-policy-row">
                     <button type="button" onclick="SamPolicy.openInfo('student')" class="login-policy-link">📜 View Student Policies &amp; Terms</button>
                 </div>
+                <div class="login-policy-row">
+                    <button type="button" onclick="openPublicFeedback()" class="login-policy-link">💬 Feedback</button>
+                </div>
             </div>
 
             <div id="admin-form" style="display:none;">
@@ -3066,6 +3234,9 @@
                 <button onclick="toggleLoginType('student')" class="btn-link">Switch to Student Dashboard</button>
                 <div class="login-policy-row">
                     <button type="button" onclick="SamPolicy.openInfo('admin')" class="login-policy-link">📜 View Admin Policies &amp; Terms</button>
+                </div>
+                <div class="login-policy-row">
+                    <button type="button" onclick="openPublicFeedback()" class="login-policy-link">💬 Feedback</button>
                 </div>
             </div>
 
@@ -3123,7 +3294,7 @@
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item" onclick="closeAdminMenu(); openAppFeedbackModal();">
-                            💬 App / Website Feedback
+                            💬 Feedback
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item admin-dropdown-parent" onclick="toggleAdminSettingSub(event)">
@@ -3570,7 +3741,7 @@
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item" onclick="closeStuMenu(); openAppFeedbackModal();">
-                            💬 App / Website Feedback
+                            💬 Feedback
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item admin-dropdown-logout" onclick="closeStuMenu(); logout()">
@@ -3842,27 +4013,8 @@
         </div>
     </div>
 
-    <!-- SUPPORT HOURS EDIT MODAL (Admin only) -->
-    <!-- APP / WEBSITE FEEDBACK MODAL (Admin + Student) -->
-    <div id="app-feedback-modal" class="modal" style="display:none; z-index:9700;">
-        <div class="modal-content" style="max-width:420px; text-align:left;">
-            <h3 style="margin:0 0 6px; font-family:'Sora',sans-serif; font-size:1rem;">💬 App / Website Feedback</h3>
-            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 16px; line-height:1.5;">Found something confusing, buggy, or have an idea to make this app or website better? Tell us — your feedback goes straight to our team and helps us improve.</p>
-            <div class="input-group">
-                <label>Your Name</label>
-                <input type="text" id="af-name" placeholder="Enter your full name" oninput="hideError('err-af-name')">
-                <div class="error-msg" id="err-af-name">Please enter your name</div>
-            </div>
-            <div class="input-group">
-                <label>Your Feedback</label>
-                <textarea id="af-message" rows="5" placeholder="What's working well? What isn't? What would you like to see added or fixed?" oninput="hideError('err-af-message')"></textarea>
-                <div class="error-msg" id="err-af-message">Please write your feedback before submitting</div>
-            </div>
-            <button onclick="submitAppFeedback()" style="background:#10b981;">🚀 Submit Feedback</button>
-            <button onclick="closeAppFeedbackModal()" style="background:#94a3b8; margin-top:8px;">✕ Cancel</button>
-        </div>
-    </div>
 
+    <!-- SUPPORT HOURS EDIT MODAL (Admin only) -->
     <div id="support-hours-edit-modal" class="modal" style="display:none; z-index:9700;">
         <div class="modal-content" style="max-width:420px; text-align:left;">
             <h3 style="margin:0 0 14px; font-family:'Sora',sans-serif; font-size:1rem;">🕒 Edit Support Hours</h3>
@@ -6861,32 +7013,22 @@
         } catch (e) { /* keep the blank default config — pre-login screens just show generic defaults */ }
     }
 
-    // Show a persistent, impossible-to-miss banner the instant a demo account's access window
+    // Forcefully end an already-open Admin session the instant a demo account's access window
     // ends (or, for a session somehow already active with no window ever granted, immediately) —
-    // no page refresh needed, and no forced/jarring alert+redirect either. The Admin stays on
-    // whatever screen they're looking at, sees the message and a Logout button right there, and
-    // logs out on their own terms when ready.
+    // this runs continuously (no page refresh needed) so nothing further can be done in the
+    // account past that moment: the session is wiped and the person is dropped straight back to
+    // the login screen with a clear message, not left with a dismissible banner to click through.
     function checkAdminDemoExpiryLive() {
         if (!_loggedInAdminId) return;
         const demoStatusLive = getAdminDemoStatus(_loggedInAdminId);
         if (demoStatusLive.isDemo && demoStatusLive.blocked) {
-            showDemoExpiredBanner(demoStatusLive.reason);
+            forceLogoutDemoExpired(demoStatusLive.reason);
         }
     }
-    function showDemoExpiredBanner(reason) {
-        if (document.getElementById('demo-expired-banner')) return; // already showing
-        const banner = document.createElement('div');
-        banner.id = 'demo-expired-banner';
-        banner.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:#7c2d12; color:#fff; padding:10px 14px; font-size:0.78rem; font-weight:800; z-index:99999; display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 10px rgba(0,0,0,0.2);';
-        banner.innerHTML = `⏳ ${reason}
-            <button onclick="logoutAdmin()" style="background:#fff; color:#7c2d12; padding:5px 12px; border-radius:6px; font-size:0.72rem; font-weight:800; width:auto; margin:0;">🚪 Logout</button>`;
-        document.body.prepend(banner);
-        document.body.style.paddingTop = '46px';
-    }
-    function hideDemoExpiredBanner() {
-        const banner = document.getElementById('demo-expired-banner');
-        if (banner) banner.remove();
-        document.body.style.paddingTop = '';
+    function forceLogoutDemoExpired(reason) {
+        logoutAdmin();
+        const errDiv = document.getElementById('login-main-err');
+        if (errDiv) { errDiv.innerText = '⏳ ' + reason; errDiv.style.display = 'block'; }
     }
 
     // Belt-and-suspenders for the pre-login Support Hours display: re-pull the config every few
@@ -6901,7 +7043,7 @@
         if (overlay && overlay.style.display === 'flex') renderSupportHoursBlock('student-support-hours-block', null, false);
     }
 
-    window.onload = function() { migrateOldSharedDbIfNeeded(); preloadPublicConfigIfSingleLibrary(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 20000); setInterval(refreshPublicSupportHoursIfIdle, 4000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
+    window.onload = function() { migrateOldSharedDbIfNeeded(); preloadPublicConfigIfSingleLibrary(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 5000); setInterval(refreshPublicSupportHoursIfIdle, 4000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
 
     // Keep the admin/student session alive across a page refresh (within the same browser tab),
     // the same way the Super Admin Control Center already does. Runs once on load, after
@@ -7103,26 +7245,171 @@
     function closeSupportHoursEditModal() {
         document.getElementById('support-hours-edit-modal').style.display = 'none';
     }
+    // ===== Shared star-rating widget (used by Admin/Student feedback, and the public
+    // outsider/student/admin feedback form on the login page) =====
+    function renderStarWidget(hostId, inputId, initialValue) {
+        const host = document.getElementById(hostId);
+        if (!host) return;
+        host.innerHTML = '';
+        host.classList.add('fb-star-widget');
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            star.dataset.val = i;
+            star.innerText = i <= initialValue ? '★' : '☆';
+            star.style.color = i <= initialValue ? '#f59e0b' : '#cbd5e1';
+            star.onclick = () => {
+                document.getElementById(inputId).value = i;
+                hideError('err-' + inputId);
+                Array.from(host.children).forEach((s, idx) => {
+                    s.innerText = (idx < i) ? '★' : '☆';
+                    s.style.color = (idx < i) ? '#f59e0b' : '#cbd5e1';
+                });
+            };
+            host.appendChild(star);
+        }
+        document.getElementById(inputId).value = initialValue || 0;
+    }
+    function starsText(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+    function afSwitchTab(tab) {
+        const isGive = tab === 'give';
+        document.getElementById('af-give-panel').style.display = isGive ? 'block' : 'none';
+        document.getElementById('af-history-panel').style.display = isGive ? 'none' : 'block';
+        document.getElementById('af-tab-btn-give').classList.toggle('active', isGive);
+        document.getElementById('af-tab-btn-history').classList.toggle('active', !isGive);
+        if (!isGive) afRenderHistory();
+    }
+    // ===== PUBLIC FEEDBACK (login page — works even with nobody logged in) =====
+    let _pfCurrentRole = null;
+    function openPublicFeedback() {
+        _pfCurrentRole = null;
+        document.getElementById('pf-step1').style.display = 'block';
+        document.getElementById('pf-step2').style.display = 'none';
+        const modal = document.getElementById('public-feedback-modal');
+        modal.style.display = 'flex';
+        // Some mobile browsers don't repaint a newly-shown `position:fixed` + blurred-backdrop
+        // element right away — it can stay invisible until something else forces a reflow (like
+        // the page changing after login), which looks exactly like "doesn't open, then suddenly
+        // pops up later". Reading offsetHeight forces the browser to repaint immediately.
+        void modal.offsetHeight;
+    }
+    function closePublicFeedback() {
+        document.getElementById('public-feedback-modal').style.display = 'none';
+    }
+    function pfBackToStep1() {
+        document.getElementById('pf-step1').style.display = 'block';
+        document.getElementById('pf-step2').style.display = 'none';
+    }
+    // Fetches the visitor's public IP address from a free, no-key, CORS-friendly service.
+    // Only used for the "Outsider" feedback path, to identify an anonymous visitor without
+    // asking them to type anything — this needs a live internet connection to actually reach
+    // api.ipify.org, which is only available once this page is really deployed/hosted (not in
+    // an offline dev sandbox).
+    function fetchPublicIP(targetInputId) {
+        const input = document.getElementById(targetInputId);
+        if (!input) return;
+        input.value = 'Detecting your IP address…';
+        fetch('https://api.ipify.org?format=json')
+            .then(r => r.json())
+            .then(data => { input.value = data.ip || 'Not available'; })
+            .catch(() => { input.value = 'Not available'; });
+    }
+    function pfChooseRole(role) {
+        _pfCurrentRole = role;
+        document.getElementById('pf-name').value = '';
+        document.getElementById('pf-identifier').value = '';
+        document.getElementById('pf-message').value = '';
+        ['err-pf-name','err-pf-identifier','err-pf-rating','err-pf-message'].forEach(hideError);
+        renderStarWidget('pf-star-widget', 'pf-rating', 0);
+        const idGroup = document.getElementById('pf-identifier-group');
+        const idInput = document.getElementById('pf-identifier');
+        const idLabel = document.getElementById('pf-identifier-label');
+        const desc = document.getElementById('pf-step2-desc');
+        if (role === 'Student') {
+            idGroup.style.display = 'block'; idLabel.innerText = 'Registration Number'; idInput.placeholder = 'Your registration number'; idInput.type = 'text'; idInput.readOnly = false; idInput.style.background = '';
+            desc.innerText = "As a Student, we'd love your feedback on the app or website.";
+        } else if (role === 'Admin') {
+            idGroup.style.display = 'block'; idLabel.innerText = 'Admin ID'; idInput.placeholder = 'Your 10-digit Admin ID'; idInput.type = 'text'; idInput.readOnly = false; idInput.style.background = '';
+            desc.innerText = "As an Admin, we'd love your feedback on the app or website.";
+        } else {
+            // Outsider: no manual typing — auto-detect and fill their IP address instead.
+            idGroup.style.display = 'block'; idLabel.innerText = 'Your IP Address (auto-detected)'; idInput.type = 'text'; idInput.readOnly = true; idInput.style.background = '#f1f5f9';
+            desc.innerText = "You're not a Student or Admin of this library — thanks for trying out the app or website anyway! We'd love to hear your thoughts.";
+            fetchPublicIP('pf-identifier');
+        }
+        document.getElementById('pf-step1').style.display = 'none';
+        document.getElementById('pf-step2').style.display = 'block';
+    }
+    function submitPublicFeedback() {
+        const name = document.getElementById('pf-name').value.trim();
+        const identifier = document.getElementById('pf-identifier').value.trim();
+        const rating = parseInt(document.getElementById('pf-rating').value) || 0;
+        const message = document.getElementById('pf-message').value.trim();
+        let err = false;
+        if (!name) { document.getElementById('err-pf-name').style.display = 'block'; err = true; }
+        if (!identifier || identifier === 'Detecting your IP address…') { document.getElementById('err-pf-identifier').style.display = 'block'; err = true; }
+        if (!rating) { document.getElementById('err-pf-rating').style.display = 'block'; err = true; }
+        if (!message) { document.getElementById('err-pf-message').style.display = 'block'; err = true; }
+        if (err) return;
+        const feedbackList = getAppFeedbackList();
+        const entry = {
+            id: 'FB-' + Date.now().toString(36).toUpperCase(),
+            name,
+            role: _pfCurrentRole,
+            adminId: _pfCurrentRole === 'Admin' ? identifier : null,
+            regNo: _pfCurrentRole === 'Student' ? identifier : null,
+            ipAddress: _pfCurrentRole === 'Outsider' ? identifier : null,
+            libName: config.libName || '',
+            rating,
+            message,
+            date: new Date().toISOString(),
+            reply: null
+        };
+        feedbackList.push(entry);
+        saveAppFeedbackList(feedbackList);
+        closePublicFeedback();
+        alert('🙏 Thank you, ' + name + '! Your feedback has been submitted.');
+    }
+
     function openAppFeedbackModal() {
-        hideError('err-af-name'); hideError('err-af-message');
+        hideError('err-af-name'); hideError('err-af-message'); hideError('err-af-rating');
         document.getElementById('af-message').value = '';
-        document.getElementById('af-name').value = loggedInStudent ? (loggedInStudent.name || '') : (config.ownerName || '');
-        document.getElementById('app-feedback-modal').style.display = 'flex';
+        // Always pre-fill with the logged-in person's own name — never leave it blank for
+        // someone who's already logged in. Locked (read-only) too, since we already know who
+        // they are; it should never need to be typed or changed here.
+        const nameInput = document.getElementById('af-name');
+        nameInput.value = loggedInStudent
+            ? (loggedInStudent.name || loggedInStudent.regNo || '')
+            : (config.ownerName || config.libName || _loggedInAdminId || _activeAdminId || '');
+        nameInput.readOnly = true;
+        nameInput.style.background = '#f1f5f9';
+        renderStarWidget('af-star-widget', 'af-rating', 0);
+        afSwitchTab('give');
+        const modal = document.getElementById('app-feedback-modal');
+        modal.style.display = 'flex';
+        void modal.offsetHeight;
     }
     function closeAppFeedbackModal() {
         document.getElementById('app-feedback-modal').style.display = 'none';
     }
+    function getAppFeedbackList() {
+        try { return JSON.parse(localStorage.getItem('Samarthak_AppFeedback') || '[]'); } catch(e) { return []; }
+    }
+    function saveAppFeedbackList(list) {
+        localStorage.setItem('Samarthak_AppFeedback', JSON.stringify(list));
+    }
     function submitAppFeedback() {
         const name = document.getElementById('af-name').value.trim();
         const message = document.getElementById('af-message').value.trim();
+        const rating = parseInt(document.getElementById('af-rating').value) || 0;
         let err = false;
         if (!name) { document.getElementById('err-af-name').style.display = 'block'; err = true; }
+        if (!rating) { document.getElementById('err-af-rating').style.display = 'block'; err = true; }
         if (!message) { document.getElementById('err-af-message').style.display = 'block'; err = true; }
         if (err) return;
         // Stored globally (not under any one library's data) so the Super Admin can see feedback
         // from every Admin and every Student, across every library, in one place.
-        let feedbackList = [];
-        try { feedbackList = JSON.parse(localStorage.getItem('Samarthak_AppFeedback') || '[]'); } catch(e) { feedbackList = []; }
+        const feedbackList = getAppFeedbackList();
         feedbackList.push({
             id: 'FB-' + Date.now().toString(36).toUpperCase(),
             name,
@@ -7130,12 +7417,42 @@
             adminId: _activeAdminId || null,
             regNo: loggedInStudent ? loggedInStudent.regNo : null,
             libName: config.libName || '',
+            rating,
             message,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            reply: null
         });
-        localStorage.setItem('Samarthak_AppFeedback', JSON.stringify(feedbackList));
+        saveAppFeedbackList(feedbackList);
         closeAppFeedbackModal();
         alert('🙏 Thank you, ' + name + '! Your feedback has been submitted.');
+    }
+    // "My Feedback History" — every feedback entry the CURRENTLY logged-in Admin or Student has
+    // submitted before, plus the Super Admin's reply once they've answered it.
+    function afRenderHistory() {
+        const host = document.getElementById('af-history-list');
+        const mine = getAppFeedbackList().filter(f =>
+            loggedInStudent ? (f.role === 'Student' && f.regNo === loggedInStudent.regNo) : (f.role === 'Admin' && f.adminId === _activeAdminId)
+        ).reverse();
+        if (!mine.length) { host.innerHTML = '<p style="text-align:center; color:var(--grey); font-size:0.82rem; padding:24px 0;">You haven\'t submitted any feedback yet.</p>'; return; }
+        host.innerHTML = mine.map(f => {
+            const d = new Date(f.date);
+            const dateText = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+            const replyHtml = f.reply
+                ? `<div class="fb-reply-bubble"><strong>💬 Super Admin replied:</strong><br>${f.reply.text}</div>`
+                : `<div class="fb-reply-pending">⏳ Awaiting a reply</div>`;
+            const roleClass = f.role === 'Student' ? 'role-student' : 'role-admin';
+            const initial = (f.name || '?').trim().charAt(0).toUpperCase();
+            return `<div class="fb-card ${roleClass}">
+                <div class="fb-card-top">
+                    <div class="fb-avatar">${initial}</div>
+                    <div class="meta"><div class="nm">${f.name}</div></div>
+                    <div class="dt">${dateText}</div>
+                </div>
+                <div class="fb-stars-line">${starsText(f.rating || 0)}</div>
+                <div class="fb-msg">${f.message}</div>
+                ${replyHtml}
+            </div>`;
+        }).join('');
     }
 
     function saveSupportHours() {
@@ -8095,7 +8412,6 @@
         if (_saBannerInterval) { clearInterval(_saBannerInterval); _saBannerInterval = null; }
         const banner = document.getElementById('sa-impersonate-banner');
         if (banner) banner.remove();
-        hideDemoExpiredBanner();
         document.body.style.paddingTop = '';
         document.getElementById('main-app').style.display = 'none';
         document.getElementById('login-sec').style.display = 'flex';
