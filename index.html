@@ -275,8 +275,8 @@
         .fb-role-card:hover, .fb-role-card:active { background: #eef2ff; border-color: #a5b4fc; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.15); }
         .fb-role-card .ic { font-size: 1.6rem; flex-shrink: 0; }
         .fb-role-card .txt { flex: 1; }
-        .fb-role-card .txt .t { font-weight: 800; font-size: 0.88rem; color: var(--dark); }
-        .fb-role-card .txt .s { font-size: 0.7rem; color: var(--grey); margin-top: 1px; }
+        .fb-role-card .txt .t { display: block; font-weight: 800; font-size: 0.88rem; color: var(--dark); }
+        .fb-role-card .txt .s { display: block; font-size: 0.7rem; color: var(--grey); margin-top: 1px; }
         .fb-star-widget { display: flex; gap: 6px; font-size: 1.9rem; cursor: pointer; user-select: none; justify-content: center; padding: 6px 0; }
         .fb-star-widget span { transition: transform 0.12s ease, color 0.12s ease; display: inline-block; }
         .fb-star-widget span:hover { transform: scale(1.18); }
@@ -6979,38 +6979,23 @@
         document.getElementById('cam-overlay').style.display = 'none';
     }
 
-    // Public pre-login screens (the Student login page's "Help & Support Center" button, its
-    // library name/branding, etc.) have no logged-in session yet, so `config` would otherwise
-    // stay at its blank initial value and Support Hours would always fall back to the hardcoded
-    // default — never whatever the Admin actually published. In the real deployment there is
-    // exactly one library's data in this browser's storage, so preload that library's config
-    // (display-only fields; no session/adminId is set) before the login page is shown.
-    function preloadPublicConfigIfSingleLibrary() {
+    // Public pre-login screens (the Student login page's "Help & Support Center" button) need to
+    // know which library's Support Hours to show before anyone has logged in. Resolving just the
+    // adminId (not the whole config blob) keeps this simple and matches how the Super Admin's own
+    // Working Hours are read — a direct, flat, ID-scoped localStorage key, read fresh every time,
+    // rather than something nested inside the big per-library config object.
+    function resolvePublicAdminId() {
         try {
-            // Prefer the persistently-remembered last-active library for this device — this is
-            // correct even when this browser has leftover data from more than one admin ID
-            // (e.g. old test accounts), which the old "exactly one library" check would miss.
             const lastId = localStorage.getItem('Samarthak_LastActiveAdminId');
-            if (lastId) {
-                const rawLast = localStorage.getItem('Samarthak_DB_' + lastId);
-                if (rawLast) {
-                    const dataLast = JSON.parse(rawLast);
-                    if (dataLast && dataLast.config) { config = dataLast.config; return; }
-                }
-            }
-            // Fallback for a device that has never completed a login yet (so nothing has been
-            // remembered as "last active"): if there's unambiguously only one library's data
-            // sitting in storage, it must be this one.
+            if (lastId && localStorage.getItem('Samarthak_DB_' + lastId)) return lastId;
             const dbKeys = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.indexOf('Samarthak_DB_') === 0 && key !== 'Samarthak_DB_migrated_v1') dbKeys.push(key);
             }
-            if (dbKeys.length === 1) {
-                const data = JSON.parse(localStorage.getItem(dbKeys[0]) || '{}');
-                if (data && data.config) config = data.config;
-            }
-        } catch (e) { /* keep the blank default config — pre-login screens just show generic defaults */ }
+            if (dbKeys.length === 1) return dbKeys[0].slice('Samarthak_DB_'.length);
+        } catch (e) { /* fall through */ }
+        return null;
     }
 
     // Forcefully end an already-open Admin session the instant a demo account's access window
@@ -7031,19 +7016,16 @@
         if (errDiv) { errDiv.innerText = '⏳ ' + reason; errDiv.style.display = 'block'; }
     }
 
-    // Belt-and-suspenders for the pre-login Support Hours display: re-pull the config every few
-    // seconds (only while genuinely on the login screen, never during a real session) and, if the
-    // Help Center happens to be open at that moment, refresh the text in place. This means the
-    // login tab self-heals to whatever the Admin most recently published even if it was sitting
-    // open from before that change, without the person needing to refresh or reopen anything.
+    // While the pre-login Help Center is open, keep its Support Hours text live — a direct
+    // localStorage read is cheap, so just re-render every few seconds rather than needing any
+    // "preload the whole config" machinery.
     function refreshPublicSupportHoursIfIdle() {
         if (_activeAdminId) return;
-        preloadPublicConfigIfSingleLibrary();
         const overlay = document.getElementById('help-center-overlay');
         if (overlay && overlay.style.display === 'flex') renderSupportHoursBlock('student-support-hours-block', null, false);
     }
 
-    window.onload = function() { migrateOldSharedDbIfNeeded(); preloadPublicConfigIfSingleLibrary(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 5000); setInterval(refreshPublicSupportHoursIfIdle, 4000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
+    window.onload = function() { migrateOldSharedDbIfNeeded(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 5000); setInterval(refreshPublicSupportHoursIfIdle, 4000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
 
     // Keep the admin/student session alive across a page refresh (within the same browser tab),
     // the same way the Super Admin Control Center already does. Runs once on load, after
@@ -7182,9 +7164,9 @@
         return new Date(dateStr).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
     }
 
-    // ===== SHARED "WORKING DAYS" HELPERS — used by both the Help & Support Center's support
-    // hours (config.supportHours) and the Lost & Found Claim Window (config.lostFoundProcedure).
-    // Day numbers follow JS Date.getDay(): 0=Sunday .. 6=Saturday. =====
+    // ===== SHARED "WORKING DAYS" HELPERS — used by the Help & Support Center's Support Hours
+    // (Samarthak_SupportHours_<adminId>, a flat key) and the Lost & Found Claim Window
+    // (config.lostFoundProcedure). Day numbers follow JS Date.getDay(): 0=Sunday .. 6=Saturday. =====
     const WEEKDAY_SHORT_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     function formatWorkingDaysList(days) {
         if (!Array.isArray(days) || !days.length) return '';
@@ -7197,10 +7179,22 @@
         const h12 = ((h % 12) || 12);
         return `${h12}:${String(m).padStart(2,'0')} ${period}`;
     }
-    // Support Hours: library-wide, shown in the Help & Support Center on both the Admin and
+    // Support Hours: per-library, shown in the Help & Support Center on both the Admin and
     // Student side, editable only from the Admin's own dashboard. Defaults to Mon–Sat.
-    function getSupportHours() {
-        return config.supportHours || { days: [1,2,3,4,5,6], openTime: '10:00', closeTime: '19:00' };
+    // REFORM: this used to live inside config.supportHours, which only exists once the whole
+    // per-library config blob has been loaded — meaning the pre-login Student page (which
+    // doesn't know any adminId yet) could only ever show the hardcoded default, never whatever
+    // the Admin actually published. Storing it instead as its own flat, ID-scoped key — exactly
+    // the same pattern as the Super Admin's own Working Hours below — means any screen that can
+    // resolve an adminId (even a guess, via resolvePublicAdminId()) can read the real, live value
+    // directly, with no dependency on the rest of that library's data being loaded at all.
+    function getSupportHours(adminId) {
+        const id = adminId || _activeAdminId || resolvePublicAdminId();
+        if (!id) return { days: [1,2,3,4,5,6], openTime: '10:00', closeTime: '19:00' };
+        try {
+            const v = JSON.parse(localStorage.getItem('Samarthak_SupportHours_' + id) || 'null');
+            return v || { days: [1,2,3,4,5,6], openTime: '10:00', closeTime: '19:00' };
+        } catch(e) { return { days: [1,2,3,4,5,6], openTime: '10:00', closeTime: '19:00' }; }
     }
     // Super Admin / Dev team's own working hours — global (not per-library), set only from the
     // Super Admin dashboard's "Working Hours Settings". Shown read-only in the Admin's own
@@ -7221,10 +7215,10 @@
         const timeText = (wh.openTime && wh.closeTime) ? (formatHHMMTime(wh.openTime) + ' – ' + formatHHMMTime(wh.closeTime)) : 'Any time';
         host.innerHTML = '🕒 We\'re available: <strong>' + daysText + '</strong>, ' + timeText + '.';
     }
-    function renderSupportHoursBlock(hostId, editBtnId, showEdit) {
+    function renderSupportHoursBlock(hostId, editBtnId, showEdit, adminId) {
         const host = document.getElementById(hostId);
         if (host) {
-            const sh = getSupportHours();
+            const sh = getSupportHours(adminId);
             const daysText = formatWorkingDaysList(sh.days) || 'Any day';
             const timeText = (sh.openTime && sh.closeTime) ? (formatHHMMTime(sh.openTime) + ' – ' + formatHHMMTime(sh.closeTime)) : 'Any time';
             host.innerHTML = '🕒 Support available: <strong>' + daysText + '</strong>, ' + timeText + '.';
@@ -7345,9 +7339,26 @@
         const identifier = document.getElementById('pf-identifier').value.trim();
         const rating = parseInt(document.getElementById('pf-rating').value) || 0;
         const message = document.getElementById('pf-message').value.trim();
+        const errIdEl = document.getElementById('err-pf-identifier');
         let err = false;
         if (!name) { document.getElementById('err-pf-name').style.display = 'block'; err = true; }
-        if (!identifier || identifier === 'Detecting your IP address…') { document.getElementById('err-pf-identifier').style.display = 'block'; err = true; }
+        if (!identifier || identifier === 'Detecting your IP address…') {
+            errIdEl.innerText = 'This field is required';
+            errIdEl.style.display = 'block'; err = true;
+        } else if (_pfCurrentRole === 'Student') {
+            // Must be a real, existing student — checked against every library's actual data,
+            // not just "is this field non-empty".
+            if (!findStudentByRegAcrossLibraries(identifier)) {
+                errIdEl.innerText = "We couldn't find a student with this Registration Number. Please check and try again.";
+                errIdEl.style.display = 'block'; err = true;
+            }
+        } else if (_pfCurrentRole === 'Admin') {
+            // Must be a real, existing Admin ID — checked against the actual Admin accounts list.
+            if (!findAdminAccount(identifier)) {
+                errIdEl.innerText = "We couldn't find an Admin with this Admin ID. Please check and try again.";
+                errIdEl.style.display = 'block'; err = true;
+            }
+        }
         if (!rating) { document.getElementById('err-pf-rating').style.display = 'block'; err = true; }
         if (!message) { document.getElementById('err-pf-message').style.display = 'block'; err = true; }
         if (err) return;
@@ -7464,8 +7475,9 @@
         const openTime = document.getElementById('sh-open-time').value || '';
         const closeTime = document.getElementById('sh-close-time').value || '';
         if ((openTime && !closeTime) || (!openTime && closeTime)) { alert('Please set both an opening and a closing time, or leave both blank for no time restriction.'); return; }
-        config.supportHours = { days, openTime, closeTime };
-        saveToLocal();
+        // Flat, ID-scoped key — not part of config — so it can be read directly by anyone who can
+        // resolve this library's adminId, without needing the whole config blob loaded first.
+        localStorage.setItem('Samarthak_SupportHours_' + _activeAdminId, JSON.stringify({ days, openTime, closeTime }));
         renderSupportHoursBlock('support-hours-block', 'admin-support-hours-edit-btn', true);
         renderSupportHoursBlock('student-support-hours-block', null, false);
         closeSupportHoursEditModal();
@@ -12873,12 +12885,8 @@ function openWalletEkycCooldownModal() {
     }
 
     function openHelpCenter() {
-        // Re-pull the latest published config right now, not just at page load — this button
-        // lives on the login screen, which the person may have had open in this tab from before
-        // the Admin published a Support Hours change, so `config` in memory could be stale.
-        // Never do this while an actual session (student or admin) is active, though — that
-        // would clobber real in-progress data with a possibly-different library's config.
-        if (!_activeAdminId) preloadPublicConfigIfSingleLibrary();
+        // Support Hours are read fresh, directly, every time renderSupportHoursBlock runs — no
+        // preload step needed (see the REFORM note on getSupportHours above).
         renderSupportHoursBlock('student-support-hours-block', null, false);
         document.getElementById('hc-step1').style.display='block';
         document.getElementById('hc-step2').style.display='none';
@@ -12908,11 +12916,9 @@ function openWalletEkycCooldownModal() {
         const match = findStudentByRegAcrossLibraries("REG"+regSuffix);
         if (!match) { document.getElementById('err-hc-reg').innerText='No student found with this registration number'; document.getElementById('err-hc-reg').style.display='block'; return; }
         loadFromLocal(match.adminId);
-        // The pre-login overlay has no library context until the student is verified above, so
-        // any support-hours text rendered at overlay-open time was always the generic fallback
-        // default — never this student's actual library. Re-render now that the correct
-        // library's config is loaded into memory.
-        renderSupportHoursBlock('student-support-hours-block', null, false);
+        // Now that the exact library is known, re-render with that exact adminId — no guessing
+        // needed at this point.
+        renderSupportHoursBlock('student-support-hours-block', null, false, match.adminId);
         const found = match.student;
         hcVerifiedStudent = found;
         document.getElementById('hc-verified-name').innerText = '✓ ' + found.name;
