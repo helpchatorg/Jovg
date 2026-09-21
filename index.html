@@ -2807,7 +2807,6 @@
             <div style="font-size:2rem; margin-bottom:8px;">🎧</div>
             <h2>Help & Support Center</h2>
             <p>Submit a ticket — we'll resolve it quickly</p>
-            <div id="student-support-hours-block" style="font-size:0.72rem; opacity:0.85; margin-top:4px;"></div>
         </div>
         <div class="help-center-body">
             <!-- Step 1 -->
@@ -7021,16 +7020,7 @@
         if (errDiv) { errDiv.innerText = '⏳ ' + reason; errDiv.style.display = 'block'; }
     }
 
-    // While the pre-login Help Center is open, keep its Support Hours text live — a direct
-    // localStorage read is cheap, so just re-render every few seconds rather than needing any
-    // "preload the whole config" machinery.
-    function refreshPublicSupportHoursIfIdle() {
-        if (_activeAdminId) return;
-        const overlay = document.getElementById('help-center-overlay');
-        if (overlay && overlay.style.display === 'flex') renderSupportHoursBlock('student-support-hours-block', null, false);
-    }
-
-    window.onload = function() { migrateOldSharedDbIfNeeded(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 5000); setInterval(refreshPublicSupportHoursIfIdle, 4000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
+    window.onload = function() { migrateOldSharedDbIfNeeded(); loadLoginAttempts(); restoreSessionFromStorage(); setInterval(checkDemoExpiry, 60000); setInterval(checkAdminDemoExpiryLive, 5000); scheduleAutoInvalidate(); setInterval(checkForSaAccessRequest, 5000); setInterval(checkForStudentAccessRequest, 5000); checkLFAutoDispose(); setInterval(checkLFAutoDispose, 3600000); }
 
     // Keep the admin/student session alive across a page refresh (within the same browser tab),
     // the same way the Super Admin Control Center already does. Runs once on load, after
@@ -7485,7 +7475,7 @@
         // resolve this library's adminId, without needing the whole config blob loaded first.
         localStorage.setItem('Samarthak_SupportHours_' + _activeAdminId, JSON.stringify({ days, openTime, closeTime }));
         renderSupportHoursBlock('support-hours-block', 'admin-support-hours-edit-btn', true);
-        renderSupportHoursBlock('student-support-hours-block', null, false);
+        renderSupportHoursBlock('stu-queries-support-hours-block', null, false);
         closeSupportHoursEditModal();
         alert('✅ Support hours updated.');
     }
@@ -12964,9 +12954,6 @@ function openWalletEkycCooldownModal() {
     }
 
     function openHelpCenter() {
-        // Support Hours are read fresh, directly, every time renderSupportHoursBlock runs — no
-        // preload step needed (see the REFORM note on getSupportHours above).
-        renderSupportHoursBlock('student-support-hours-block', null, false);
         document.getElementById('hc-step1').style.display='block';
         document.getElementById('hc-step2').style.display='none';
         document.getElementById('hc-step3').style.display='none';
@@ -12995,9 +12982,6 @@ function openWalletEkycCooldownModal() {
         const match = findStudentByRegAcrossLibraries("REG"+regSuffix);
         if (!match) { document.getElementById('err-hc-reg').innerText='No student found with this registration number'; document.getElementById('err-hc-reg').style.display='block'; return; }
         loadFromLocal(match.adminId);
-        // Now that the exact library is known, re-render with that exact adminId — no guessing
-        // needed at this point.
-        renderSupportHoursBlock('student-support-hours-block', null, false, match.adminId);
         const found = match.student;
         hcVerifiedStudent = found;
         document.getElementById('hc-verified-name').innerText = '✓ ' + found.name;
