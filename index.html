@@ -7227,14 +7227,7 @@
             const sh = getSupportHours(resolvedId);
             const daysText = formatWorkingDaysList(sh.days) || 'Any day';
             const timeText = (sh.openTime && sh.closeTime) ? (formatHHMMTime(sh.openTime) + ' – ' + formatHHMMTime(sh.closeTime)) : 'Any time';
-            let html = '🕒 Support available: <strong>' + daysText + '</strong>, ' + timeText + '.';
-            // Temporary on-screen diagnostic (pre-login screen only) so it's possible to tell,
-            // just by looking at the login page, whether this device could even figure out which
-            // library's hours to show — without needing to open dev tools. Safe to remove later.
-            if (hostId === 'student-support-hours-block') {
-                html += '<br><span style="font-size:0.62rem; opacity:0.7;">[debug: resolved library = ' + (resolvedId || 'NONE FOUND') + ']</span>';
-            }
-            host.innerHTML = html;
+            host.innerHTML = '🕒 Support available: <strong>' + daysText + '</strong>, ' + timeText + '.';
         }
         const editBtn = editBtnId ? document.getElementById(editBtnId) : null;
         if (editBtn) editBtn.style.display = showEdit ? 'inline-block' : 'none';
@@ -8737,18 +8730,27 @@
             const available = g.capacity - bookedInGroup;
             const label = g.suffix ? `Group ${g.suffix} (${seatLabel(from)}–${seatLabel(to)})` : `Seats ${from}–${to}`;
             const pct = g.capacity ? Math.round((bookedInGroup / g.capacity) * 100) : 0;
+            let seatCellsHtml = '';
+            for (let n = from; n <= to; n++) {
+                const isBooked = bookedSeatNums.has(n);
+                seatCellsHtml += `<div class="seat${isBooked ? ' booked' : ''}" style="cursor:default; height:38px; font-size:0.7rem;">${isBooked ? 'X' : seatLabel(n)}</div>`;
+            }
             html += `<div style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <strong style="font-size:0.84rem;">${label}</strong>
                     <span style="font-size:0.78rem; font-weight:800; color:${available > 0 ? '#16a34a' : '#dc2626'};">${available} / ${g.capacity} available</span>
                 </div>
-                <div style="background:#e2e8f0; border-radius:6px; height:8px; overflow:hidden;">
+                <div style="background:#e2e8f0; border-radius:6px; height:8px; overflow:hidden; margin-bottom:10px;">
                     <div style="background:${available > 0 ? '#16a34a' : '#dc2626'}; height:100%; width:${pct}%;"></div>
                 </div>
+                <div class="seat-grid" style="grid-template-columns:repeat(auto-fill, minmax(42px, 1fr)); gap:6px; margin-top:0;">${seatCellsHtml}</div>
             </div>`;
         });
         const totalAvailable = config.totalSeats - totalBooked;
-        html = `<div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:12px 14px; margin-bottom:14px; text-align:center;">
+        html = `<div style="display:flex; justify-content:center; gap:16px; margin-bottom:12px; font-size:0.72rem; color:var(--grey);">
+            <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:var(--available); margin-right:4px;"></span>Available</span>
+            <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#fca5a5; margin-right:4px;"></span>Booked</span>
+        </div><div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:12px 14px; margin-bottom:14px; text-align:center;">
             <div style="font-size:0.72rem; color:var(--grey); font-weight:800; text-transform:uppercase;">Total for ${selectedShiftObj.name}</div>
             <div style="font-size:1.3rem; font-weight:800; color:var(--primary-dark); margin-top:2px;">${totalAvailable} / ${config.totalSeats} available</div>
         </div>` + html;
@@ -17853,7 +17855,7 @@ The **Library Lost & Found service is provided free of charge**. The Library doe
 <!-- ===== ADMIN-SIDE: "Disable Attendance" modal, per-student (History settings gear) ===== -->
 <!-- ===== ADMIN: "Check Seat Availability" modal — live count, broken down by seat group ===== -->
 <div id="check-seat-availability-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px); z-index:6000; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:18px; max-width:460px; width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <div style="background:#fff; border-radius:18px; max-width:560px; width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
         <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border);">
             <h3 style="margin:0; font-size:1rem;">🔍 Check Seat Availability</h3>
             <button onclick="closeCheckSeatAvailabilityModal()" style="width:auto; padding:6px 12px; background:var(--grey); margin:0; font-size:0.72rem;">✕ Close</button>
