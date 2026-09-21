@@ -3289,12 +3289,12 @@
                             🔓 Access Requests <span class="admin-menu-notif-dot" id="admin-accessreq-notif-dot" style="display:none;"></span>
                         </div>
                         <div class="admin-dropdown-divider"></div>
-                        <div class="admin-dropdown-item" onclick="closeAdminMenu(); SamPolicy.openViewer('admin', _loggedInAdminId, _loggedInAdminId);">
-                            📜 Policies <span class="admin-menu-notif-dot" id="admin-policies-notif-dot" style="display:none;"></span>
-                        </div>
-                        <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item" onclick="closeAdminMenu(); openAppFeedbackModal();">
                             💬 Feedback
+                        </div>
+                        <div class="admin-dropdown-divider"></div>
+                        <div class="admin-dropdown-item" onclick="closeAdminMenu(); SamPolicy.openViewer('admin', _loggedInAdminId, _loggedInAdminId);">
+                            📜 Policies <span class="admin-menu-notif-dot" id="admin-policies-notif-dot" style="display:none;"></span>
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item admin-dropdown-parent" onclick="toggleAdminSettingSub(event)">
@@ -3471,6 +3471,7 @@
                     <div class="error-msg" id="err-shift-select">Please select a shift plan</div>
                 </div>
                 <button onclick="proceedToSeats()" id="proceedBtn" style="background:var(--selected);">Proceed to Seat Selection →</button>
+                <button type="button" onclick="openCheckSeatAvailabilityModal()" style="background:#0ea5e9; margin-top:8px;">🔍 Check Seat Availability</button>
             </div>
 
             <div id="seat-selection-step" style="display:none;">
@@ -3563,6 +3564,7 @@
                     <button onclick="setAdminAttFilter('invalid',this)" class="att-filter-btn" style="width:auto;padding:4px 12px;font-size:0.7rem;margin:0;background:#dc2626;">Absent</button>
                     <button onclick="setAdminAttFilter('holiday',this)" class="att-filter-btn" style="width:auto;padding:4px 12px;font-size:0.7rem;margin:0;background:#c2410c;">🏖️ Holiday</button>
                     <button onclick="openDynamicQR()" style="width:auto;padding:4px 14px;font-size:0.7rem;margin:0;background:#4f46e5;margin-left:6px;">🔲 Show Attendance QR</button>
+                    <button onclick="openDisableAllAttendanceModal()" style="width:auto;padding:4px 14px;font-size:0.7rem;margin:0;background:#dc2626;">🚫 Disable All Student Attendance</button>
                 </div>
             </div>
         </div>
@@ -3736,12 +3738,12 @@
                             🔓 Access Request
                         </div>
                         <div class="admin-dropdown-divider"></div>
-                        <div class="admin-dropdown-item" onclick="closeStuMenu(); SamPolicy.openViewer('student', loggedInStudent.regNo, loggedInStudent.name);">
-                            📜 Policies
-                        </div>
-                        <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item" onclick="closeStuMenu(); openAppFeedbackModal();">
                             💬 Feedback
+                        </div>
+                        <div class="admin-dropdown-divider"></div>
+                        <div class="admin-dropdown-item" onclick="closeStuMenu(); SamPolicy.openViewer('student', loggedInStudent.regNo, loggedInStudent.name);">
+                            📜 Policies
                         </div>
                         <div class="admin-dropdown-divider"></div>
                         <div class="admin-dropdown-item admin-dropdown-logout" onclick="closeStuMenu(); logout()">
@@ -3853,6 +3855,9 @@
             <div class="section-header">
                 <h2 style="margin:0; border:none; padding:0;">Help & Support</h2>
                 <button onclick="goBackToStudentProfile()" style="width:auto; padding:8px 16px; background:var(--grey); margin:0; font-size:0.72rem;">← Back</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                <span id="stu-queries-support-hours-block" style="flex:1; font-size:0.78rem; color:var(--dark);"></span>
             </div>
             <div id="stu-queries-notif-area" style="margin-bottom:15px;"></div>
 
@@ -6712,7 +6717,7 @@
         if (!s) return;
         // Check if already has entry today
         const todayStr = getLocalDateStr(new Date().toISOString());
-        const holidayNotice = getAttendanceDisableNoticeFor(todayStr, s.shift);
+        const holidayNotice = getAttendanceBlockReasonFor(s, todayStr);
         if (holidayNotice) { alert(`🏖️ Library is closed today (${holidayNotice.title}). Attendance is disabled.`); return; }
         const done = attendances.find(a => a.regNo === s.regNo && getLocalDateStr(a.date) === todayStr);
         if (done && (done.attStatus === 'completed' || done.attStatus === 'pending_exit')) {
@@ -6778,7 +6783,7 @@
         const s = loggedInStudent;
         if (!s) return;
         const todayStr = getLocalDateStr(new Date().toISOString());
-        const holidayNotice = getAttendanceDisableNoticeFor(todayStr, s.shift);
+        const holidayNotice = getAttendanceBlockReasonFor(s, todayStr);
         if (holidayNotice) { alert(`🏖️ Library is closed today (${holidayNotice.title}). Attendance is disabled.`); return; }
         const record = attendances.find(a => a.regNo === s.regNo && getLocalDateStr(a.date) === todayStr && a.attStatus === 'pending_exit');
         if (!record) { alert("No pending entry found for today."); return; }
@@ -6845,7 +6850,7 @@
     function saveAttendance(img) {
         if (loggedInStudent && loggedInStudent.isDemo) { alert("Attendance can only be marked after registration is confirmed."); return; }
         const todayStr = getLocalDateStr(new Date().toISOString());
-        const holidayNotice = getAttendanceDisableNoticeFor(todayStr, loggedInStudent && loggedInStudent.shift);
+        const holidayNotice = getAttendanceBlockReasonFor(loggedInStudent, todayStr);
         if (holidayNotice) { alert(`🏖️ Library is closed today (${holidayNotice.title}). Attendance is disabled.`); return; }
         const already = attendances.find(a => a.regNo === loggedInStudent.regNo && getLocalDateStr(a.date) === todayStr);
         if (already) { alert("Attendance already marked for today!"); return; }
@@ -6858,7 +6863,7 @@
     function markEntryAttendance(img) {
         if (!loggedInStudent || loggedInStudent.isDemo) { alert("Registration must be confirmed first."); return; }
         const todayStr = getLocalDateStr(new Date().toISOString());
-        const holidayNotice = getAttendanceDisableNoticeFor(todayStr, loggedInStudent.shift);
+        const holidayNotice = getAttendanceBlockReasonFor(loggedInStudent, todayStr);
         if (holidayNotice) { alert(`🏖️ Library is closed today (${holidayNotice.title}). Attendance is disabled.`); return; }
         const already = attendances.find(a => a.regNo === loggedInStudent.regNo && getLocalDateStr(a.date) === todayStr);
         if (already && (already.attStatus === 'pending_exit' || already.attStatus === 'completed')) { alert("Entry already marked today!"); renderStudentDashboard(); return; }
@@ -6959,7 +6964,7 @@
                 if (!already) {
                     const absentDate = new Date();
                     absentDate.setHours(parseInt(sh.end.split(':')[0]), parseInt(sh.end.split(':')[1]), 0, 0);
-                    const holidayNotice = getAttendanceDisableNoticeFor(todayStr, s.shift);
+                    const holidayNotice = getAttendanceBlockReasonFor(s, todayStr);
                     if (holidayNotice) {
                         attendances.push({ regNo: s.regNo, name: s.name, date: absentDate.toISOString(), photo: null, status: 'HOLIDAY', holidayTitle: holidayNotice.title });
                     } else {
@@ -7218,10 +7223,18 @@
     function renderSupportHoursBlock(hostId, editBtnId, showEdit, adminId) {
         const host = document.getElementById(hostId);
         if (host) {
-            const sh = getSupportHours(adminId);
+            const resolvedId = adminId || _activeAdminId || resolvePublicAdminId();
+            const sh = getSupportHours(resolvedId);
             const daysText = formatWorkingDaysList(sh.days) || 'Any day';
             const timeText = (sh.openTime && sh.closeTime) ? (formatHHMMTime(sh.openTime) + ' – ' + formatHHMMTime(sh.closeTime)) : 'Any time';
-            host.innerHTML = '🕒 Support available: <strong>' + daysText + '</strong>, ' + timeText + '.';
+            let html = '🕒 Support available: <strong>' + daysText + '</strong>, ' + timeText + '.';
+            // Temporary on-screen diagnostic (pre-login screen only) so it's possible to tell,
+            // just by looking at the login page, whether this device could even figure out which
+            // library's hours to show — without needing to open dev tools. Safe to remove later.
+            if (hostId === 'student-support-hours-block') {
+                html += '<br><span style="font-size:0.62rem; opacity:0.7;">[debug: resolved library = ' + (resolvedId || 'NONE FOUND') + ']</span>';
+            }
+            host.innerHTML = html;
         }
         const editBtn = editBtnId ? document.getElementById(editBtnId) : null;
         if (editBtn) editBtn.style.display = showEdit ? 'inline-block' : 'none';
@@ -7688,7 +7701,7 @@
         const isShiftOver = currentShiftObj && currentShiftObj.end && currentTimeStr > currentShiftObj.end;
         const isFeePending = now > dueDate;
 
-        const holidayNoticeToday = getAttendanceDisableNoticeFor(todayStr, s.shift);
+        const holidayNoticeToday = getAttendanceBlockReasonFor(s, todayStr);
         renderStudentUpcomingHoliday(s, todayStr, holidayNoticeToday);
         if (holidayNoticeToday) {
             btnAtt.disabled = true; btnAtt.style.background = "#94a3b8"; btnAtt.innerText = "🏖️ Library Holiday — Attendance Disabled";
@@ -7839,7 +7852,7 @@
         if (!done && isShiftOver) {
             const alreadyRecorded = attendances.find(a => a.regNo === s.regNo && getLocalDateStr(a.date) === todayStr && (a.status === 'ABSENT' || a.status === 'HOLIDAY'));
             if (!alreadyRecorded) {
-                const holidayNoticeNow = getAttendanceDisableNoticeFor(todayStr, s.shift);
+                const holidayNoticeNow = getAttendanceBlockReasonFor(s, todayStr);
                 const tr = document.createElement('tr');
                 if (holidayNoticeNow) {
                     tr.innerHTML = '<td>' + formatAppDate(now) + '</td><td>--:--</td><td>--:--</td><td>--</td><td><span style="color:#c2410c; font-weight:800;">🏖️ HOLIDAY (' + holidayNoticeNow.title + ')</span></td>';
@@ -8329,7 +8342,7 @@
                 const already = attendances.find(a => a.regNo === s.regNo && getLocalDateStr(a.date) === todayStr && (a.status === 'ABSENT' || a.status === 'HOLIDAY'));
                 if (!already) {
                     const absentDate = new Date(todayStr + 'T' + sh.end + ':00');
-                    const holidayNotice = getAttendanceDisableNoticeFor(todayStr, s.shift);
+                    const holidayNotice = getAttendanceBlockReasonFor(s, todayStr);
                     if (holidayNotice) {
                         attendances.push({ regNo: s.regNo, name: s.name, date: absentDate.toISOString(), photo: null, status: 'HOLIDAY', holidayTitle: holidayNotice.title });
                     } else {
@@ -8680,6 +8693,66 @@
         document.getElementById('student-details-step').style.display = 'block';
         document.getElementById('seat-selection-step').style.display = 'none';
         document.getElementById('gridPanel').style.display = 'none';
+    }
+
+    // ===== ADMIN: "Check Seat Availability" — live count, broken down by seat group =====
+    function openCheckSeatAvailabilityModal() {
+        const sel = document.getElementById('csa-shift-select');
+        sel.innerHTML = '<option value="">-- Choose a Shift --</option>' + config.shifts.map(sh => `<option value="${sh.id}">${sh.name}</option>`).join('');
+        document.getElementById('csa-results').innerHTML = '';
+        document.getElementById('check-seat-availability-modal').style.display = 'flex';
+    }
+    function closeCheckSeatAvailabilityModal() {
+        document.getElementById('check-seat-availability-modal').style.display = 'none';
+    }
+    function renderSeatAvailabilityResults() {
+        const sid = document.getElementById('csa-shift-select').value;
+        const host = document.getElementById('csa-results');
+        if (!sid) { host.innerHTML = ''; return; }
+        const selectedShiftObj = config.shifts.find(x => x.id === sid);
+        if (!selectedShiftObj || !config.totalSeats) { host.innerHTML = '<p style="font-size:0.8rem; color:var(--grey); text-align:center; padding:14px 0;">No seats configured yet.</p>'; return; }
+        // Same "booked" rule used by the actual seat-picker grid: a seat is unavailable for this
+        // shift if any OTHER shift with an overlapping time range already holds it.
+        const bookedSeatNums = new Set();
+        for (let i = 1; i <= config.totalSeats; i++) {
+            const isBooked = students.some(s => {
+                if (s.seat !== i) return false;
+                const other = config.shifts.find(sh => sh.id === s.shift);
+                if (!other) return false;
+                return (selectedShiftObj.start < other.end && selectedShiftObj.end > other.start);
+            });
+            if (isBooked) bookedSeatNums.add(i);
+        }
+        const groups = (config.seatGroups && config.seatGroups.length) ? config.seatGroups : [{ suffix: '', capacity: config.totalSeats }];
+        let html = '';
+        let seatCursor = 0;
+        let totalBooked = 0;
+        groups.forEach(g => {
+            const from = seatCursor + 1;
+            const to = seatCursor + g.capacity;
+            seatCursor = to;
+            let bookedInGroup = 0;
+            for (let n = from; n <= to; n++) if (bookedSeatNums.has(n)) bookedInGroup++;
+            totalBooked += bookedInGroup;
+            const available = g.capacity - bookedInGroup;
+            const label = g.suffix ? `Group ${g.suffix} (${seatLabel(from)}–${seatLabel(to)})` : `Seats ${from}–${to}`;
+            const pct = g.capacity ? Math.round((bookedInGroup / g.capacity) * 100) : 0;
+            html += `<div style="background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <strong style="font-size:0.84rem;">${label}</strong>
+                    <span style="font-size:0.78rem; font-weight:800; color:${available > 0 ? '#16a34a' : '#dc2626'};">${available} / ${g.capacity} available</span>
+                </div>
+                <div style="background:#e2e8f0; border-radius:6px; height:8px; overflow:hidden;">
+                    <div style="background:${available > 0 ? '#16a34a' : '#dc2626'}; height:100%; width:${pct}%;"></div>
+                </div>
+            </div>`;
+        });
+        const totalAvailable = config.totalSeats - totalBooked;
+        html = `<div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:12px 14px; margin-bottom:14px; text-align:center;">
+            <div style="font-size:0.72rem; color:var(--grey); font-weight:800; text-transform:uppercase;">Total for ${selectedShiftObj.name}</div>
+            <div style="font-size:1.3rem; font-weight:800; color:var(--primary-dark); margin-top:2px;">${totalAvailable} / ${config.totalSeats} available</div>
+        </div>` + html;
+        host.innerHTML = html;
     }
 
     function initGrid() {
@@ -9850,6 +9923,7 @@
                                 ? `<button class="safe-opt" onclick="unblockStudentDashboard('${s.id}')">🔓 Unblock Dashboard</button>`
                                 : `<button class="danger-opt" onclick="openBlockModal('${s.id}')">🔒 Block Dashboard</button>`
                             }
+                            <button class="safe-opt" onclick="openDisableAttendanceModal('${s.id}')">🚫 Disable Attendance${(s.attendanceDisabledRanges && s.attendanceDisabledRanges.length) ? ' <span class="notif-dot"></span>' : ''}</button>
                             <button class="safe-opt" onclick="openAdminAccessStudentModal('${s.id}')">📨 Request Dashboard Access</button>
                             <button class="safe-opt" onclick="openStudentRestrictionModal('${s.id}')">🎫 Ticket Restriction Details${(s.ticketRestriction && s.ticketRestriction.restorationRequests || []).some(r=>r.status==='Pending') ? ' <span class="notif-dot"></span>' : ''}</button>
                         </div>
@@ -12763,13 +12837,16 @@ function openWalletEkycCooldownModal() {
         const target = document.getElementById(id);
         if (target) target.classList.add('active');
         if (el) el.classList.add('active');
-        if (id === 'stu-queries-sec') renderStudentTickets();
+        if (id === 'stu-queries-sec') { renderStudentTickets(); renderSupportHoursBlock('stu-queries-support-hours-block', null, false); }
     }
 
     function switchStudentToQueries() {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById('stu-queries-sec').classList.add('active');
         setStudentNavActive('stu-queries-nav-btn');
+        // The student is already logged in here, so _activeAdminId is exactly their own library
+        // — no guessing needed at all, unlike the pre-login screen.
+        renderSupportHoursBlock('stu-queries-support-hours-block', null, false);
         renderStudentTickets();
     }
 
@@ -15186,6 +15263,98 @@ function openWalletEkycCooldownModal() {
     let _admAccessStudentId = null;
     let _admAccessPollInterval = null;
 
+    // ===== ADMIN -> STUDENT: Disable Attendance for a date range (History settings gear) =====
+    let _daStudentId = null;
+    let _daEditingIdx = null; // null = adding a new range; a number = editing that range's index
+    function openDisableAttendanceModal(studentId) {
+        document.querySelectorAll('.settings-dropdown.open').forEach(d => d.classList.remove('open'));
+        _daStudentId = studentId;
+        _daEditingIdx = null;
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        document.getElementById('da-student-name').innerText = `${s.name} (${s.regNo})`;
+        document.getElementById('da-from').value = '';
+        document.getElementById('da-to').value = '';
+        document.getElementById('da-reason').value = '';
+        document.getElementById('da-save-btn').innerText = '➕ Add Disabled Period';
+        hideError('err-da-range');
+        renderDisableAttendanceRangeList();
+        document.getElementById('disable-attendance-modal').style.display = 'flex';
+    }
+    function closeDisableAttendanceModal() {
+        document.getElementById('disable-attendance-modal').style.display = 'none';
+        _daStudentId = null;
+        _daEditingIdx = null;
+    }
+    function editDisableAttendanceRange(idx) {
+        const s = students.find(x => x.id === _daStudentId);
+        if (!s || !s.attendanceDisabledRanges || !s.attendanceDisabledRanges[idx]) return;
+        const r = s.attendanceDisabledRanges[idx];
+        _daEditingIdx = idx;
+        document.getElementById('da-from').value = r.from;
+        document.getElementById('da-to').value = r.to;
+        document.getElementById('da-reason').value = r.reason || '';
+        document.getElementById('da-save-btn').innerText = '💾 Update Disabled Period';
+        hideError('err-da-range');
+    }
+    function addDisableAttendanceRange() {
+        const s = students.find(x => x.id === _daStudentId);
+        if (!s) return;
+        const from = document.getElementById('da-from').value;
+        const to = document.getElementById('da-to').value;
+        const reason = document.getElementById('da-reason').value.trim();
+        if (!from || !to || to < from) {
+            document.getElementById('err-da-range').innerText = !from || !to ? 'Please pick both a From and a To date.' : 'The To date must be the same as or after the From date.';
+            document.getElementById('err-da-range').style.display = 'block';
+            return;
+        }
+        hideError('err-da-range');
+        s.attendanceDisabledRanges = s.attendanceDisabledRanges || [];
+        if (_daEditingIdx !== null && s.attendanceDisabledRanges[_daEditingIdx]) {
+            s.attendanceDisabledRanges[_daEditingIdx] = { from, to, reason };
+        } else {
+            s.attendanceDisabledRanges.push({ from, to, reason });
+        }
+        saveToLocal();
+        _daEditingIdx = null;
+        document.getElementById('da-from').value = '';
+        document.getElementById('da-to').value = '';
+        document.getElementById('da-reason').value = '';
+        document.getElementById('da-save-btn').innerText = '➕ Add Disabled Period';
+        renderDisableAttendanceRangeList();
+        renderHistory();
+    }
+    function removeDisableAttendanceRange(idx) {
+        const s = students.find(x => x.id === _daStudentId);
+        if (!s || !s.attendanceDisabledRanges) return;
+        s.attendanceDisabledRanges.splice(idx, 1);
+        saveToLocal();
+        if (_daEditingIdx === idx) { _daEditingIdx = null; document.getElementById('da-save-btn').innerText = '➕ Add Disabled Period'; document.getElementById('da-from').value = ''; document.getElementById('da-to').value = ''; document.getElementById('da-reason').value = ''; }
+        renderDisableAttendanceRangeList();
+        renderHistory();
+    }
+    function renderDisableAttendanceRangeList() {
+        const s = students.find(x => x.id === _daStudentId);
+        const host = document.getElementById('da-range-list');
+        if (!s) return;
+        const ranges = s.attendanceDisabledRanges || [];
+        if (!ranges.length) { host.innerHTML = '<p style="font-size:0.78rem; color:var(--grey); text-align:center; padding:10px 0;">No disabled periods set.</p>'; return; }
+        const todayStr = getLocalDateStr(new Date());
+        host.innerHTML = ranges.map((r, idx) => {
+            const isPast = r.to < todayStr;
+            return `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:${isPast ? '#f8fafc' : '#fef2f2'}; border:1px solid ${isPast ? 'var(--border)' : '#fecaca'}; border-radius:10px; padding:10px 12px; margin-bottom:8px;">
+                <div>
+                    <div style="font-weight:800; font-size:0.8rem; color:${isPast ? 'var(--grey)' : '#991b1b'};">${formatAppDate(r.from)} → ${formatAppDate(r.to)}${isPast ? ' (past)' : ''}</div>
+                    ${r.reason ? `<div style="font-size:0.72rem; color:var(--grey); margin-top:2px;">${r.reason}</div>` : ''}
+                </div>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                    <button onclick="editDisableAttendanceRange(${idx})" style="width:auto; padding:6px 12px; margin:0; background:#fff; color:#475569; border:1.5px solid var(--border); font-size:0.68rem;">✏️ Edit</button>
+                    <button onclick="removeDisableAttendanceRange(${idx})" style="width:auto; padding:6px 12px; margin:0; background:#fff; color:#dc2626; border:1.5px solid #fecaca; font-size:0.68rem;">✕ Remove</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
     function openAdminAccessStudentModal(studentId) {
         document.querySelectorAll('.settings-dropdown.open').forEach(d => d.classList.remove('open'));
         _admAccessStudentId = studentId;
@@ -16402,6 +16571,86 @@ The **Library Lost & Found service is provided free of charge**. The Library doe
     // ============================================================
     // ===== SMART NOTIFICATIONS =====
     // ============================================================
+    // ===== ADMIN -> ALL STUDENTS: Disable Attendance library-wide for a date range =====
+    // Deliberately separate from the Holiday Alert / Notices system — Holiday is about posting a
+    // closure announcement to students; this is purely an attendance on/off switch for everyone,
+    // with its own storage (config.attendanceGloballyDisabledRanges) and its own admin UI.
+    let _gdaEditingIdx = null;
+    function openDisableAllAttendanceModal() {
+        _gdaEditingIdx = null;
+        document.getElementById('gda-from').value = '';
+        document.getElementById('gda-to').value = '';
+        document.getElementById('gda-reason').value = '';
+        document.getElementById('gda-save-btn').innerText = '➕ Add Disabled Period';
+        hideError('err-gda-range');
+        renderGlobalDisableRangeList();
+        document.getElementById('disable-all-attendance-modal').style.display = 'flex';
+    }
+    function closeDisableAllAttendanceModal() {
+        document.getElementById('disable-all-attendance-modal').style.display = 'none';
+        _gdaEditingIdx = null;
+    }
+    function editGlobalDisableRange(idx) {
+        const ranges = config.attendanceGloballyDisabledRanges || [];
+        if (!ranges[idx]) return;
+        _gdaEditingIdx = idx;
+        document.getElementById('gda-from').value = ranges[idx].from;
+        document.getElementById('gda-to').value = ranges[idx].to;
+        document.getElementById('gda-reason').value = ranges[idx].reason || '';
+        document.getElementById('gda-save-btn').innerText = '💾 Update Disabled Period';
+        hideError('err-gda-range');
+    }
+    function addGlobalDisableRange() {
+        const from = document.getElementById('gda-from').value;
+        const to = document.getElementById('gda-to').value;
+        const reason = document.getElementById('gda-reason').value.trim();
+        if (!from || !to || to < from) {
+            document.getElementById('err-gda-range').innerText = !from || !to ? 'Please pick both a From and a To date.' : 'The To date must be the same as or after the From date.';
+            document.getElementById('err-gda-range').style.display = 'block';
+            return;
+        }
+        hideError('err-gda-range');
+        config.attendanceGloballyDisabledRanges = config.attendanceGloballyDisabledRanges || [];
+        if (_gdaEditingIdx !== null && config.attendanceGloballyDisabledRanges[_gdaEditingIdx]) {
+            config.attendanceGloballyDisabledRanges[_gdaEditingIdx] = { from, to, reason };
+        } else {
+            config.attendanceGloballyDisabledRanges.push({ from, to, reason });
+        }
+        saveToLocal();
+        _gdaEditingIdx = null;
+        document.getElementById('gda-from').value = '';
+        document.getElementById('gda-to').value = '';
+        document.getElementById('gda-reason').value = '';
+        document.getElementById('gda-save-btn').innerText = '➕ Add Disabled Period';
+        renderGlobalDisableRangeList();
+    }
+    function removeGlobalDisableRange(idx) {
+        if (!config.attendanceGloballyDisabledRanges) return;
+        config.attendanceGloballyDisabledRanges.splice(idx, 1);
+        saveToLocal();
+        if (_gdaEditingIdx === idx) { _gdaEditingIdx = null; document.getElementById('gda-save-btn').innerText = '➕ Add Disabled Period'; document.getElementById('gda-from').value = ''; document.getElementById('gda-to').value = ''; document.getElementById('gda-reason').value = ''; }
+        renderGlobalDisableRangeList();
+    }
+    function renderGlobalDisableRangeList() {
+        const host = document.getElementById('gda-range-list');
+        const ranges = config.attendanceGloballyDisabledRanges || [];
+        if (!ranges.length) { host.innerHTML = '<p style="font-size:0.78rem; color:var(--grey); text-align:center; padding:10px 0;">No disabled periods set.</p>'; return; }
+        const todayStr = getLocalDateStr(new Date());
+        host.innerHTML = ranges.map((r, idx) => {
+            const isPast = r.to < todayStr;
+            return `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:${isPast ? '#f8fafc' : '#fef2f2'}; border:1px solid ${isPast ? 'var(--border)' : '#fecaca'}; border-radius:10px; padding:10px 12px; margin-bottom:8px;">
+                <div>
+                    <div style="font-weight:800; font-size:0.8rem; color:${isPast ? 'var(--grey)' : '#991b1b'};">${formatAppDate(r.from)} → ${formatAppDate(r.to)}${isPast ? ' (past)' : ''}</div>
+                    ${r.reason ? `<div style="font-size:0.72rem; color:var(--grey); margin-top:2px;">${r.reason}</div>` : ''}
+                </div>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                    <button onclick="editGlobalDisableRange(${idx})" style="width:auto; padding:6px 12px; margin:0; background:#fff; color:#475569; border:1.5px solid var(--border); font-size:0.68rem;">✏️ Edit</button>
+                    <button onclick="removeGlobalDisableRange(${idx})" style="width:auto; padding:6px 12px; margin:0; background:#fff; color:#dc2626; border:1.5px solid #fecaca; font-size:0.68rem;">✕ Remove</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
     function setNoticeType(type) {
         noticeType = type;
         document.getElementById('notice-type-announcement').classList.toggle('active', type === 'announcement');
@@ -16611,6 +16860,25 @@ The **Library Lost & Found service is provided free of charge**. The Library doe
 
     function isAttendanceDisabledOn(dateStr, shiftId) {
         return !!getAttendanceDisableNoticeFor(dateStr, shiftId);
+    }
+
+    // Combines three independent reasons attendance might be off for a given student on a given
+    // day — checked in this order: (1) a standalone library-wide "Disable All Student Attendance"
+    // range (config.attendanceGloballyDisabledRanges — a plain on/off switch, unrelated to
+    // Notices), (2) the Holiday system above (a closure announcement that also happens to turn
+    // attendance off), (3) that specific student's own "Disable Attendance" range. Returns an
+    // object shaped like a holiday notice ({title}) so every existing call site — which only ever
+    // reads `.title` for its alert/status text — keeps working unchanged regardless of which
+    // reason applies.
+    function getAttendanceBlockReasonFor(student, dateStr) {
+        const globalRange = (config.attendanceGloballyDisabledRanges || []).find(r => dateStr >= r.from && dateStr <= r.to);
+        if (globalRange) return { title: globalRange.reason || 'Attendance has been disabled for all students', isGlobalDisable: true };
+        const holidayNotice = getAttendanceDisableNoticeFor(dateStr, student && student.shift);
+        if (holidayNotice) return holidayNotice;
+        if (!student) return null;
+        const personalRange = (student.attendanceDisabledRanges || []).find(r => dateStr >= r.from && dateStr <= r.to);
+        if (personalRange) return { title: personalRange.reason || 'Attendance temporarily disabled for you', isPersonal: true };
+        return null;
     }
 
     // ===== HOLIDAY OVERVIEW: stat cards + mini calendar (admin Notices & Alerts) =====
@@ -17578,6 +17846,96 @@ The **Library Lost & Found service is provided free of charge**. The Library doe
         <div style="display:flex; gap:10px;">
             <button onclick="respondToStudentAccessRequest(false)" style="flex:1; background:#fee2e2; color:#991b1b; padding:13px; border-radius:10px; font-weight:800; font-size:0.85rem; border:none; cursor:pointer;">❌ Reject</button>
             <button onclick="respondToStudentAccessRequest(true)" style="flex:1; background:#16a34a; color:#fff; padding:13px; border-radius:10px; font-weight:800; font-size:0.85rem; border:none; cursor:pointer;">✅ Accept</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADMIN-SIDE: "Disable Attendance" modal, per-student (History settings gear) ===== -->
+<!-- ===== ADMIN: "Check Seat Availability" modal — live count, broken down by seat group ===== -->
+<div id="check-seat-availability-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px); z-index:6000; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; max-width:460px; width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:1rem;">🔍 Check Seat Availability</h3>
+            <button onclick="closeCheckSeatAvailabilityModal()" style="width:auto; padding:6px 12px; background:var(--grey); margin:0; font-size:0.72rem;">✕ Close</button>
+        </div>
+        <div style="padding:20px; text-align:left;">
+            <div class="input-group">
+                <label>Shift</label>
+                <select id="csa-shift-select" onchange="renderSeatAvailabilityResults()">
+                    <option value="">-- Choose a Shift --</option>
+                </select>
+            </div>
+            <div id="csa-results"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADMIN-SIDE: "Disable All Student Attendance" modal (History → Attendance tab) — a
+     standalone attendance on/off switch for the whole library, separate from Holiday Alerts ===== -->
+<div id="disable-all-attendance-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px); z-index:6000; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; max-width:460px; width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:1rem;">🚫 Disable All Student Attendance</h3>
+            <button onclick="closeDisableAllAttendanceModal()" style="width:auto; padding:6px 12px; background:var(--grey); margin:0; font-size:0.72rem;">✕ Close</button>
+        </div>
+        <div style="padding:20px; text-align:left;">
+            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 16px; line-height:1.5;">During the selected days, <strong>no student</strong> in this library will be marked Present or Absent — even if they try to check in. This only switches attendance off; it does not post anything to students (use Notices &amp; Alerts for that).</p>
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1;">
+                    <label>From Date</label>
+                    <input type="date" id="gda-from">
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>To Date</label>
+                    <input type="date" id="gda-to">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Reason (optional)</label>
+                <input type="text" id="gda-reason" placeholder="e.g. Library closed for renovation">
+            </div>
+            <div class="error-msg" id="err-gda-range">Please pick a valid From/To date range</div>
+            <button id="gda-save-btn" onclick="addGlobalDisableRange()" style="background:#dc2626;">➕ Add Disabled Period</button>
+            <div style="margin-top:18px;">
+                <div style="font-size:0.72rem;color:var(--grey);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Current &amp; Upcoming Disabled Periods</div>
+                <div id="gda-range-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="disable-attendance-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px); z-index:6000; padding:20px; box-sizing:border-box; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; max-width:460px; width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:1rem;">🚫 Disable Attendance</h3>
+            <button onclick="closeDisableAttendanceModal()" style="width:auto; padding:6px 12px; background:var(--grey); margin:0; font-size:0.72rem;">✕ Close</button>
+        </div>
+        <div style="padding:20px; text-align:left;">
+            <div class="input-group">
+                <label>Student</label>
+                <div id="da-student-name" style="padding:10px 12px; background:#f1f5f9; border-radius:8px; font-weight:800; font-size:0.85rem;"></div>
+            </div>
+            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 16px; line-height:1.5;">During the selected days, this student's attendance won't be marked — neither Present nor Absent — even if they try to check in.</p>
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1;">
+                    <label>From Date</label>
+                    <input type="date" id="da-from">
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>To Date</label>
+                    <input type="date" id="da-to">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Reason (optional)</label>
+                <input type="text" id="da-reason" placeholder="e.g. Medical leave">
+            </div>
+            <div class="error-msg" id="err-da-range">Please pick a valid From/To date range</div>
+            <button id="da-save-btn" onclick="addDisableAttendanceRange()" style="background:#dc2626;">➕ Add Disabled Period</button>
+            <div style="margin-top:18px;">
+                <div style="font-size:0.72rem;color:var(--grey);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Current &amp; Upcoming Disabled Periods</div>
+                <div id="da-range-list"></div>
+            </div>
         </div>
     </div>
 </div>
